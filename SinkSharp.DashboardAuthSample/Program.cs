@@ -5,6 +5,7 @@ using SinkSharp.Core.Enrichers;
 using SinkSharp.Sinks.Console;
 using SinkSharp.Sinks.Dashboard;
 using SinkSharp.Sinks.File;
+using SinkSharp.Core.Middleware;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,11 +16,15 @@ var builder = WebApplication.CreateBuilder(args);
 DashboardSink dashSink = null!;
 
 builder.Services.AddSinkSharp(options => options
+    .MinimumLevel(LogLevel.Debug)
     .WithCorrelationId()
     .WithEnvironment("AuthSample", builder.Environment.EnvironmentName)
-    .WithDashboard(out dashSink)
-    .WriteTo(new ColoredConsoleSink())
-    .WriteTo(new RollingFileSink("logs", "AuthSample")));
+    // Dashboard: Information+ — skip Debug noise in the live UI
+    .WithDashboard(out dashSink, minLevel: LogLevel.Information)
+    // Console: Debug+ (full detail for local dev)
+    .WriteTo(new ColoredConsoleSink(),           LogLevel.Debug)
+    // File: Warning+ — auth logs should only capture actionable events
+    .WriteTo(new RollingFileSink("logs", "AuthSample"), LogLevel.Warning));
 
 builder.Services.AddSinkSharpDashboard(dashSink);
 
@@ -60,6 +65,7 @@ builder.Services.AddAuthorization(opts =>
 });
 
 var app = builder.Build();
+app.UseSinkSharp();  // handles X-Correlation-Id header lifecycle
 app.UseAuthentication();
 app.UseAuthorization();
 

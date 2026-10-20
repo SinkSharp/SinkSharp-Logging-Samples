@@ -90,6 +90,7 @@ using SinkSharp.Enrichers.Azure;
 using SinkSharp.Sinks.Console;
 using SinkSharp.Sinks.Dashboard;
 using SinkSharp.Sinks.File;
+using SinkSharp.Core.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var appName = builder.Environment.ApplicationName;
@@ -129,15 +130,7 @@ var app = builder.Build();
 // ── 3. Correlation ID middleware ──────────────────────────────────────────────
 // Reads X-Correlation-Id header from upstream (API gateway, load balancer)
 // or generates a new one. Propagates automatically to all log events.
-app.Use(async (ctx, next) =>
-{
-    var id = ctx.Request.Headers["X-Correlation-Id"]
-                        .FirstOrDefault()
-               ?? Guid.NewGuid().ToString("N")[..12];
-    using var _ = CorrelationContext.Use(id);
-    ctx.Response.Headers["X-Correlation-Id"] = id;
-    await next();
-});
+app.UseSinkSharp();
 
 // ── 4. Mount dashboard ────────────────────────────────────────────────────────
 // https://localhost:5001/sinksharp/dashboard       ← live log stream

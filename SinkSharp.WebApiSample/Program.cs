@@ -9,6 +9,7 @@ using SinkSharp.Core.Enrichers;
 using SinkSharp.Sinks.Console;
 using SinkSharp.Sinks.Dashboard;
 using SinkSharp.Sinks.File;
+using SinkSharp.Core.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,10 +23,16 @@ builder.Services.AddSinkSharpWithHealth(options => options
     .WithCorrelationId()
     .WithEnvironment(builder.Environment.ApplicationName,
                      builder.Environment.EnvironmentName)
+    .WithMachineName()   // standalone machine/pod name (also in WithEnvironment above — shows the API)
     .WithPiiMasking()
+    // Drop health check noise — never reaches any sink
+    .Filter(e => !e.MessageTemplate.Contains("health", StringComparison.OrdinalIgnoreCase))
+    // Dashboard: Information+ (default — no extra filter needed here)
     .WithDashboard(out dashSink)
+    // Console: global minimum (Information+)
     .WriteTo(new ColoredConsoleSink())
-    .WriteTo(new RollingFileSink("logs", "SinkSharp.WebApi")));
+    // File: Warning+ only — keeps production log files small and actionable
+    .WriteTo(new RollingFileSink("logs", "SinkSharp.WebApi"), LogLevel.Warning));
 
 builder.Services.AddSinkSharpDashboard(dashSink);
     // ── Multi-pod option — uncomment when running 2+ Kubernetes replicas ─────────
@@ -38,16 +45,8 @@ builder.Services.AddSinkSharpDashboard(dashSink);
 
 var app = builder.Build();
 
-// ── Correlation ID middleware ─────────────────────────────────
-app.Use(async (ctx, next) =>
-{
-    var id = ctx.Request.Headers["X-Correlation-Id"]
-                        .FirstOrDefault()
-               ?? Guid.NewGuid().ToString("N")[..12];
-    using var _ = CorrelationContext.Use(id);
-    ctx.Response.Headers["X-Correlation-Id"] = id;
-    await next();
-});
+// ── Correlation middleware ──────────────────────────────────────────────────
+app.UseSinkSharp();
 
 // ── Mount dashboard — same host, same port ────────────────────
 // https://localhost:5001/sinksharp/dashboard       ← UI

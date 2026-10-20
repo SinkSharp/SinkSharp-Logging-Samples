@@ -7,9 +7,9 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SinkSharp.Core" Version="1.0.4" />
-    <PackageReference Include="SinkSharp.Sinks.Console" Version="1.0.1" />
-    <PackageReference Include="SinkSharp.Sinks.File" Version="1.0.0" />
-    <PackageReference Include="SinkSharp.Sinks.Dashboard" Version="1.0.0" />
+    <PackageReference Include="SinkSharp.Core"             Version="1.0.5" />
+    <PackageReference Include="SinkSharp.Sinks.Console"    Version="1.0.1" />
+    <PackageReference Include="SinkSharp.Sinks.File"       Version="1.0.0" />
+    <PackageReference Include="SinkSharp.Sinks.Dashboard"  Version="1.0.1" />
   </ItemGroup>
 </Project>

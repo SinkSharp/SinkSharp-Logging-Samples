@@ -2,6 +2,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.10.12224.181
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.AdvancedEnricherSample", "SinkSharp.AdvancedEnricherSample\SinkSharp.AdvancedEnricherSample.csproj", "{DDDDDDDD-EEEE-EEEE-EEEE-DDDDDDDDDDDD}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.Sample", "SinkSharp.Sample\SinkSharp.Sample.csproj", "{11111111-AAAA-AAAA-AAAA-111111111111}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.WebApiSample", "SinkSharp.WebApiSample\SinkSharp.WebApiSample.csproj", "{22222222-AAAA-AAAA-AAAA-222222222222}"
@@ -86,6 +88,10 @@ Global
 		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDDDDDDD-EEEE-EEEE-EEEE-DDDDDDDDDDDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDDDDDDD-EEEE-EEEE-EEEE-DDDDDDDDDDDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDDDDDDD-EEEE-EEEE-EEEE-DDDDDDDDDDDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDDDDDDD-EEEE-EEEE-EEEE-DDDDDDDDDDDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

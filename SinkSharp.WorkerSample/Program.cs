@@ -21,9 +21,15 @@ builder.Services.AddSinkSharp(options => options
     .MinimumLevel(LogLevel.Information)
     .WithCorrelationId()
     .WithEnvironment("SinkSharp.Worker", builder.Environment.EnvironmentName)
+    .WithMachineName()
+    // Drop routine heartbeat messages — keep logs actionable
+    .Filter(e => !e.MessageTemplate.Contains("heartbeat", StringComparison.OrdinalIgnoreCase))
+    // Dashboard: Information+ (matches global min — no extra filter needed)
     .WithDashboard(out dashSink)
+    // Console: Information+ (matches global min)
     .WriteTo(new ColoredConsoleSink())
-    .WriteTo(new RollingFileSink("logs", "SinkSharp.Worker")));
+    // File: Warning+ — worker files stay small; errors and warnings only
+    .WriteTo(new RollingFileSink("logs", "SinkSharp.Worker"), LogLevel.Warning));
 
 builder.Services.AddHostedService<OrderProcessingWorker>();
 builder.Services.AddHostedService<ReportGenerationWorker>();
@@ -57,6 +63,8 @@ public class OrderProcessingWorker(ILogger<OrderProcessingWorker> logger)
 
         while (!ct.IsCancellationRequested)
         {
+            // No app.UseSinkSharp() here — Worker Service has no HTTP pipeline.
+            // Set correlation ID manually per job using CorrelationContext.Use().
             using var _ = CorrelationContext.Use(Guid.NewGuid().ToString("N")[..8]);
 
             var orderId = Random.Shared.Next(1000, 9999);

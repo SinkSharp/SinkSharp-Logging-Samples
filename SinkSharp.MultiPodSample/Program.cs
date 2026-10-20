@@ -36,6 +36,7 @@ using SinkSharp.Core;
 using SinkSharp.Core.Enrichers;
 using SinkSharp.Sinks.Console;
 using SinkSharp.Sinks.Dashboard;
+using SinkSharp.Core.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,14 +75,7 @@ builder.Services.AddSinkSharpDashboard(dashSink);
 var app = builder.Build();
 
 // Correlation ID middleware
-app.Use(async (ctx, next) =>
-{
-    var id = ctx.Request.Headers["X-Correlation-Id"].FirstOrDefault()
-               ?? Guid.NewGuid().ToString("N")[..12];
-    using var _ = CorrelationContext.Use(id);
-    ctx.Response.Headers["X-Correlation-Id"] = id;
-    await next();
-});
+app.UseSinkSharp();
 
 // ── OPTION A: No auth (default — local dev, internal tools behind VPN)
 app.UseSinkSharpDashboard("/sinksharp/dashboard");

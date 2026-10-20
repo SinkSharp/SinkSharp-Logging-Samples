@@ -4,6 +4,7 @@
 // Demonstrates:
 //   ✅ Minimal API (no controllers) with SinkSharp
 //   ✅ Per-category log levels (silence Microsoft/System noise)
+//   ✅ Per-sink minimum level — console=Debug, file=Warning, dashboard=Information
 //   ✅ Correlation ID middleware — reads from header or generates new
 //   ✅ PII masking — email/card/SSN masked before any sink writes
 //   ✅ Dashboard mounted at /sinksharp/dashboard (same port as API)
@@ -24,6 +25,7 @@ using SinkSharp.Core.Enrichers;
 using SinkSharp.Sinks.Console;
 using SinkSharp.Sinks.Dashboard;
 using SinkSharp.Sinks.File;
+using SinkSharp.Core.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var appName = builder.Environment.ApplicationName;
@@ -47,12 +49,18 @@ builder.Services.AddSinkSharpWithHealth(options => options
     .WithEnvironment(appName, env)      // AppName + Environment + MachineName
     .WithPiiMasking()                   // mask email, card, SSN, phone
 
-    // Dashboard — same port as API (no separate server needed)
-    .WithDashboard(out dashSink)
+    // Dashboard — same port as API; Information+ keeps Debug noise out of the UI
+    .WithDashboard(out dashSink, minLevel: LogLevel.Information)
 
-    // Sinks — where logs are written (always async, never blocks callers)
-    .WriteTo(new ColoredConsoleSink())
-    .WriteTo(new RollingFileSink("logs", appName)));
+    // Sinks — per-sink minimum levels: each destination gets the right verbosity
+    //   Console  : Debug+        — full detail in your terminal / CI output
+    //   File     : Warning+      — production files stay small and actionable
+    //
+    // Global minimum (Debug) must be ≤ any per-sink minimum.
+    // The global gate fires first (in SinkSharpLogger.IsEnabled); events that
+    // pass it then hit each sink's own level guard in the pipeline.
+    .WriteTo(new ColoredConsoleSink(),         LogLevel.Debug)
+    .WriteTo(new RollingFileSink("logs", appName), LogLevel.Warning));
 
 builder.Services.AddSinkSharpDashboard(dashSink);
     // ── Multi-pod option — uncomment when running 2+ Kubernetes replicas ─────────
@@ -65,18 +73,8 @@ builder.Services.AddSinkSharpDashboard(dashSink);
 
 var app = builder.Build();
 
-// ── 2. Correlation ID middleware ──────────────────────────────────────────────
-// Reads from incoming header (API gateway / load balancer) or generates new.
-// Sets in response header so callers can correlate their logs with ours.
-app.Use(async (ctx, next) =>
-{
-    var id = ctx.Request.Headers["X-Correlation-Id"]
-                        .FirstOrDefault()
-               ?? Guid.NewGuid().ToString("N")[..12];
-    using var _ = CorrelationContext.Use(id);
-    ctx.Response.Headers["X-Correlation-Id"] = id;
-    await next();
-});
+// ── Correlation middleware ──────────────────────────────────────────────────
+app.UseSinkSharp();
 
 // ── 3. Dashboard + health check ───────────────────────────────────────────────
 app.UseSinkSharpDashboard("/sinksharp/dashboard");

@@ -3,6 +3,7 @@ using SinkSharp.Core;
 using SinkSharp.Core.Enrichers;
 using SinkSharp.Sinks.Console;
 using SinkSharp.Sinks.File;
+using SinkSharp.Core.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var appName = builder.Environment.ApplicationName;
@@ -16,24 +17,16 @@ builder.Services.AddSinkSharpWithHealth(options => options
     .WithCorrelationId()
     .WithEnvironment(appName, env)
     .WithPiiMasking()
+    // Per-sink minimum levels — console gets everything, file keeps only Warning+
     .WriteTo(new ColoredConsoleSink())
-    .WriteTo(new RollingFileSink("logs", appName)));
+    .WriteTo(new RollingFileSink("logs", appName), LogLevel.Warning));
 
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-// ── Correlation ID middleware ──────────────────────────────────────────────────
-app.Use(async (ctx, next) =>
-{
-    var id = ctx.Request.Headers["X-Correlation-Id"]
-                        .FirstOrDefault()
-               ?? Guid.NewGuid().ToString("N")[..12];
-
-    using var _ = CorrelationContext.Use(id);
-    ctx.Response.Headers["X-Correlation-Id"] = id;
-    await next();
-});
+// ── Correlation middleware ──────────────────────────────────────────────────
+app.UseSinkSharp();
 
 app.MapGet("/", (ILogger<Program> logger) =>
 {

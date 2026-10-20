@@ -19,6 +19,7 @@ using SinkSharp.Core.Enrichers;
 using SinkSharp.Sinks.Console;
 using SinkSharp.Sinks.Dashboard;
 using SinkSharp.Sinks.File;
+using SinkSharp.Core.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,29 +52,8 @@ var app = builder.Build();
 
 app.UseSinkSharpDashboard("/sinksharp/dashboard");
 
-// ── Correlation + Tenant middleware ───────────────────────────────────────────
-app.Use(async (ctx, next) =>
-{
-    var corrId   = ctx.Request.Headers["X-Correlation-Id"].FirstOrDefault()
-                   ?? Guid.NewGuid().ToString("N")[..12];
-    var tenantId = ctx.Request.Headers["X-Tenant-Id"].FirstOrDefault()
-                   ?? "tenant-default";
-
-    // CorrelationId: captured on caller thread via CorrelationContext.Use()
-    using var _1 = CorrelationContext.Use(corrId);
-
-    // TenantId: use ILogger BeginScope — scope is captured in BuildEvent()
-    // on the caller thread, so it flows correctly to the drainer thread.
-    // TenantEnricher.Use() sets AsyncLocal which is NOT visible on drainer thread.
-    var logger = ctx.RequestServices.GetRequiredService<ILogger<Program>>();
-    using var _2 = logger.BeginScope(new Dictionary<string, object>
-    {
-        ["TenantId"] = tenantId
-    });
-
-    ctx.Response.Headers["X-Correlation-Id"] = corrId;
-    await next();
-});
+// ── Correlation middleware ──────────────────────────────────────────────────
+app.UseSinkSharp();
 
 app.MapGet("/", () => new
 {

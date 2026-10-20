@@ -28,3 +28,5 @@
 /SinkSharp.DashboardAuthSample/logs
 /SinkSharp.DashboardAuthSample/obj/
 /SinkSharp.WebApiSample/logs/
+/SinkSharp.AdvancedEnricherSample/bin/
+/SinkSharp.AdvancedEnricherSample/obj/

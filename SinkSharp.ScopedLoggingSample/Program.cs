@@ -22,6 +22,7 @@ using SinkSharp.Core.Enrichers;
 using SinkSharp.Sinks.Console;
 using SinkSharp.Sinks.Dashboard;
 using SinkSharp.Sinks.File;
+using SinkSharp.Core.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,19 +55,12 @@ builder.Services.AddScoped<PaymentService>();
 var app = builder.Build();
 
 // ── Correlation middleware — set ONCE per request, flows everywhere ────────────
-app.Use(async (ctx, next) =>
-{
-    var id = ctx.Request.Headers["X-Correlation-Id"].FirstOrDefault()
-               ?? Guid.NewGuid().ToString("N")[..12];
-
-    // CorrelationContext.Use() sets AsyncLocal — flows through all awaits
-    // All ILogger<T> calls in OrderService, InventoryService, PaymentService
-    // automatically include this correlation ID without any passing/injection
-    using var _ = CorrelationContext.Use(id);
-    ctx.Response.Headers["X-Correlation-Id"] = id;
-
-    await next(); // correlation flows through the entire middleware pipeline
-});
+// app.UseSinkSharp() reads X-Correlation-Id from the request header (or generates
+// a new 12-char GUID), sets CorrelationContext.Current via AsyncLocal so it flows
+// through all awaits, and writes X-Correlation-Id to the response header.
+// All ILogger<T> calls in OrderService, InventoryService, PaymentService
+// automatically include this correlation ID without any manual passing.
+app.UseSinkSharp();
 
 app.UseSinkSharpDashboard("/sinksharp/dashboard");
 
