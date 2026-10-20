@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SinkSharp.Core" Version="1.0.2" />
+    <PackageReference Include="SinkSharp.Core" Version="1.0.4" />
     <PackageReference Include="SinkSharp.Sinks.Console" Version="1.0.1" />
   </ItemGroup>
 </Project>

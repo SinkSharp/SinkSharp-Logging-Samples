@@ -83,7 +83,32 @@ app.Use(async (ctx, next) =>
     await next();
 });
 
+// ── OPTION A: No auth (default — local dev, internal tools behind VPN)
 app.UseSinkSharpDashboard("/sinksharp/dashboard");
+
+// ── OPTION B: Require any authenticated user (uses your app's existing auth)
+// app.UseSinkSharpDashboard("/sinksharp/dashboard", opts =>
+//     opts.RequireAuthorization());
+
+// ── OPTION C: Named policy (define your own rules in AddAuthorization())
+// app.UseSinkSharpDashboard("/sinksharp/dashboard", opts =>
+//     opts.RequireAuthorization("AdminOnly"));
+
+// ── OPTION D: Role check
+// app.UseSinkSharpDashboard("/sinksharp/dashboard", opts =>
+//     opts.RequireRole("Admin", "DevOps"));
+
+// ── OPTION E: IP allowlist — no user auth needed
+// app.UseSinkSharpDashboard("/sinksharp/dashboard", opts =>
+//     opts.AllowFrom("10.0.0.0/8", "192.168.0.0/16", "::1"));
+
+// ── OPTION F: Basic auth — simplest, no AddAuthentication() needed
+// app.UseSinkSharpDashboard("/sinksharp/dashboard", opts =>
+//     opts.UseBasicAuth("admin", "secret123"));
+
+// ── OPTION G: Escape hatch — full control over endpoint config
+// app.UseSinkSharpDashboard("/sinksharp/dashboard", opts =>
+//     opts.ConfigureEndpoints(ep => ep.RequireAuthorization("AdminOnly")));
 app.MapHealthChecks("/health");
 
 app.MapGet("/", () => new

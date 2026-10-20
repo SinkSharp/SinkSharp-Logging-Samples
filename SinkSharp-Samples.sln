@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.10.12224.181 stable
+VisualStudioVersion = 18.10.12224.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.Sample", "SinkSharp.Sample\SinkSharp.Sample.csproj", "{11111111-AAAA-AAAA-AAAA-111111111111}"
 EndProject
@@ -25,6 +25,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.AspNetSample", "SinkSharp.AspNetSample\SinkSharp.AspNetSample.csproj", "{BBBBBBBB-CCCC-CCCC-CCCC-BBBBBBBBBBBB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.MultiPodSample", "SinkSharp.MultiPodSample\SinkSharp.MultiPodSample.csproj", "{CCCCCCCC-DDDD-DDDD-DDDD-CCCCCCCCCCCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.DashboardAuthSample", "SinkSharp.DashboardAuthSample\SinkSharp.DashboardAuthSample.csproj", "{99B16A67-CDC4-40DC-AE7C-52AC35278533}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -80,6 +82,10 @@ Global
 		{CCCCCCCC-DDDD-DDDD-DDDD-CCCCCCCCCCCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCCCCCCC-DDDD-DDDD-DDDD-CCCCCCCCCCCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCCCCCCC-DDDD-DDDD-DDDD-CCCCCCCCCCCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

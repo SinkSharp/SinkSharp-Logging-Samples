@@ -23,3 +23,8 @@
 /SinkSharp.AspNetSample/obj/
 /SinkSharp.MultiPodSample/bin/
 /SinkSharp.MultiPodSample/obj/
+/SinkSharp.DashboardAuthSample/bin/Debug/net9.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/SinkSharp.DashboardAuthSample/bin/
+/SinkSharp.DashboardAuthSample/logs
+/SinkSharp.DashboardAuthSample/obj/
+/SinkSharp.WebApiSample/logs/
