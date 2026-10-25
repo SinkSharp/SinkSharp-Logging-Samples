@@ -3,6 +3,7 @@
 // Run: dotnet run
 // Open: http://localhost:5341
 
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using SinkSharp.Core;
 using SinkSharp.Core.Enrichers;
@@ -24,8 +25,8 @@ var builder = SinkSharpBuilder
     .WithCorrelationId()
     .WithEnvironment("SinkSharp.Console", "Development")
     .WithPiiMasking()
-    .WithDashboard(out var dashSink, minLevel: LogLevel.Information)
-    .WriteTo(new ColoredConsoleSink(),              LogLevel.Debug)
+    .WithDashboard(out var dashSink, minLevel: LogLevel.Debug)
+    .WriteTo(new ColoredConsoleSink(), LogLevel.Debug)
     .WriteTo(new RollingFileSink("logs", "SinkSharp.Console"), LogLevel.Warning);
 
 var logger = builder.BuildLogger("SinkSharp.Console");
@@ -56,6 +57,7 @@ while (!cts.IsCancellationRequested)
 {
     batch++;
     using var _ = CorrelationContext.Use($"batch-{batch:D4}");
+    var sw = Stopwatch.StartNew();
 
     // Debug → console only
     logger.Log(LogLevel.Debug,
@@ -69,21 +71,26 @@ while (!cts.IsCancellationRequested)
         await Task.Delay(300, cts.Token).ContinueWith(_ => { });
     }
 
-    // Information → console + dashboard (file skips Info)
-    logger.Log(LogLevel.Information,
-        "Batch {Batch} complete — processed {Count} items", batch, 5);
+    sw.Stop();
 
-    if (batch % 3 == 0)
+    // Information → console + dashboard (file skips Info)
+    // ElapsedMs shows in the console properties line and dashboard Properties tab
+    logger.Log(LogLevel.Information,
+        "Batch {Batch} complete — processed {Count} items in {ElapsedMs}ms",
+        batch, 5, sw.ElapsedMilliseconds);
+
+    if (sw.ElapsedMilliseconds > 1500)
         // Warning → all sinks: console, file, dashboard
         logger.Log(LogLevel.Warning,
-            "Batch {Batch} took longer than expected ({Ms}ms)", batch, 1600);
+            "Batch {Batch} took longer than expected ({ElapsedMs}ms)",
+            batch, sw.ElapsedMilliseconds);
 
     if (batch % 7 == 0)
         // Error → all sinks (unbounded channel — never dropped)
         logger.Log(LogLevel.Error,
             "Failed to save batch {Batch} result for user {Email}",
             batch, "ops@example.com");
-        // → PII masked: "ops@***"
+    // → PII masked: "ops@***"
 
     await Task.Delay(TimeSpan.FromSeconds(2), cts.Token).ContinueWith(_ => { });
 }

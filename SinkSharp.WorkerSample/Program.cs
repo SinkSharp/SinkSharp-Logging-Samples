@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Microsoft.Extensions.Logging;
 using SinkSharp.Core;
+using SinkSharp.Core.Queue;
 using SinkSharp.Core.Enrichers;
 using SinkSharp.Sinks.Console;
 using SinkSharp.Sinks.Dashboard;
@@ -44,7 +45,7 @@ var host = builder.Build();
 // http://localhost:5341/stats ← JSON stats
 // Pass the queue so dashboard stats show real numbers
 // (DashboardServer has its own embedded DI — cannot resolve from host)
-var queue = host.Services.GetRequiredService<SinkSharp.Core.Queue.AsyncLogQueue>();
+var queue = host.Services.GetRequiredService<AsyncLogQueue>();
 var dashboard = new DashboardServer(dashSink, port: 5341, queue: queue);
 await dashboard.StartAsync();
 

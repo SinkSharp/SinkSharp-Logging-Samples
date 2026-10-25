@@ -16,6 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 // ── SinkSharp setup ───────────────────────────────────────────
 DashboardSink dashSink = null!;
 
+// Required for AddSinkSharpRequestId, AddSinkSharpRequestPath,
+// AddSinkSharpElapsedTime, AddSinkSharpUserContext
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddSinkSharpWithHealth(options => options
     .MinimumLevel(LogLevel.Information)
     .MinimumLevelFor("Microsoft", LogLevel.Warning)
@@ -35,6 +39,12 @@ builder.Services.AddSinkSharpWithHealth(options => options
     .WriteTo(new RollingFileSink("logs", "SinkSharp.WebApi"), LogLevel.Warning));
 
 builder.Services.AddSinkSharpDashboard(dashSink);
+
+// ── HTTP context enrichers (optional — add only what you need) ────────────
+builder.Services.AddSinkSharpRequestId();    // stamps RequestId on every request
+builder.Services.AddSinkSharpRequestPath();  // stamps HttpMethod + RequestPath
+builder.Services.AddSinkSharpElapsedTime();  // stamps ElapsedMs since request start
+
     // ── Multi-pod option — uncomment when running 2+ Kubernetes replicas ─────────
     // Requires: dotnet add package Microsoft.AspNetCore.SignalR.StackExchangeRedis
     // builder.Services.AddSinkSharpDashboardRedis(dashSink, signalR =>

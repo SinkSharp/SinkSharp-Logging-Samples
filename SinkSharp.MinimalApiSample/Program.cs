@@ -34,6 +34,9 @@ var env     = builder.Environment.EnvironmentName;
 // ── 1. SinkSharp with health check ───────────────────────────────────────────
 DashboardSink dashSink = null!;
 
+// Required for HTTP context enrichers below
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddSinkSharpWithHealth(options => options
 
     // Global minimum level
@@ -63,6 +66,12 @@ builder.Services.AddSinkSharpWithHealth(options => options
     .WriteTo(new RollingFileSink("logs", appName), LogLevel.Warning));
 
 builder.Services.AddSinkSharpDashboard(dashSink);
+
+// ── HTTP context enrichers ────────────────────────────────────────────────────
+builder.Services.AddSinkSharpRequestId();    // stamps RequestId on every request
+builder.Services.AddSinkSharpRequestPath();  // stamps HttpMethod + RequestPath
+builder.Services.AddSinkSharpElapsedTime();  // stamps ElapsedMs since request start
+
     // ── Multi-pod option — uncomment when running 2+ Kubernetes replicas ─────────
     // Requires: dotnet add package Microsoft.AspNetCore.SignalR.StackExchangeRedis
     // builder.Services.AddSinkSharpDashboardRedis(dashSink, signalR =>

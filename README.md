@@ -162,11 +162,11 @@ app.UseSinkSharpDashboard("/sinksharp/dashboard");
 ## Install
 
 ```bash
-dotnet add package SinkSharp.Core                          # 1.0.2
-dotnet add package SinkSharp.Sinks.Console                  # 1.0.1
-dotnet add package SinkSharp.Sinks.File                     # 1.0.0
-dotnet add package SinkSharp.Sinks.Dashboard --prerelease    # 1.0.4-preview
-dotnet add package SinkSharp.Enrichers.Azure                # 1.0.0
+dotnet add package SinkSharp.Core                   # 1.0.8
+dotnet add package SinkSharp.Sinks.Console           # 1.0.1
+dotnet add package SinkSharp.Sinks.File              # 1.0.2
+dotnet add package SinkSharp.Sinks.Dashboard         # 1.0.4
+dotnet add package SinkSharp.Enrichers.Azure         # 1.0.0
 ```
 
 ---

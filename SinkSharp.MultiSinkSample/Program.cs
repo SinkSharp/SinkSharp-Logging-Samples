@@ -37,6 +37,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 DashboardSink dashSink = null!;
 
+// Required for HTTP context enrichers
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddSinkSharpWithHealth(options => options
     .MinimumLevel(LogLevel.Debug)                             // global gate — all sinks see Debug+
     .MinimumLevelFor("Microsoft", LogLevel.Warning)
@@ -58,6 +61,11 @@ builder.Services.AddSinkSharpWithHealth(options => options
     .WriteTo(new AuditFileSink()));
 
 builder.Services.AddSinkSharpDashboard(dashSink);
+
+// ── HTTP context enrichers ────────────────────────────────────────────
+builder.Services.AddSinkSharpRequestId();    // stamps RequestId
+builder.Services.AddSinkSharpRequestPath();  // stamps HttpMethod + RequestPath
+builder.Services.AddSinkSharpElapsedTime();  // stamps ElapsedMs
     // ── Multi-pod option — uncomment when running 2+ Kubernetes replicas ─────────
     // Requires: dotnet add package Microsoft.AspNetCore.SignalR.StackExchangeRedis
     // builder.Services.AddSinkSharpDashboardRedis(dashSink, signalR =>

@@ -10,6 +10,9 @@ var appName = builder.Environment.ApplicationName;
 var env     = builder.Environment.EnvironmentName;
 
 // ── Register SinkSharp with health check ─────────────────────────────────────
+// Required for HTTP context enrichers
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddSinkSharpWithHealth(options => options
     .MinimumLevel(LogLevel.Information)
     .MinimumLevelFor("Microsoft",     LogLevel.Warning)  // silence ASP.NET noise
@@ -22,6 +25,11 @@ builder.Services.AddSinkSharpWithHealth(options => options
     .WriteTo(new RollingFileSink("logs", appName), LogLevel.Warning));
 
 builder.Services.AddHealthChecks();
+
+// ── HTTP context enrichers ────────────────────────────────────────────
+builder.Services.AddSinkSharpRequestId();    // stamps RequestId
+builder.Services.AddSinkSharpRequestPath();  // stamps HttpMethod + RequestPath
+builder.Services.AddSinkSharpElapsedTime();  // stamps ElapsedMs
 
 var app = builder.Build();
 
