@@ -30,6 +30,7 @@ DashboardSink dashSink = null!;
 
 builder.Services.AddSinkSharp(options => options
     .MinimumLevel(LogLevel.Debug)
+    .WithSampling(rate: 0.05, maxLevel: LogLevel.Debug)   // 5% of Debug to OTel
     .MinimumLevelFor("Microsoft", LogLevel.Warning)
     .WithCorrelationId()   // ← enables AsyncLocal correlation propagation
     .WithEnvironment(builder.Environment.ApplicationName, builder.Environment.EnvironmentName)

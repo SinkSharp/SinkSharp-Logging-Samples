@@ -31,3 +31,6 @@
 /SinkSharp.AdvancedEnricherSample/bin/
 /SinkSharp.AdvancedEnricherSample/obj/
 /SinkSharp.AdvancedEnricherSample/logs/
+/SinkSharp.OpenTelemetrySample/obj/
+/SinkSharp.OpenTelemetrySample/bin/
+/SinkSharp.ScopedLoggingSample/logs/
