@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.MultiPodSample", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.DashboardAuthSample", "SinkSharp.DashboardAuthSample\SinkSharp.DashboardAuthSample.csproj", "{99B16A67-CDC4-40DC-AE7C-52AC35278533}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.OpenTelemetrySample", "SinkSharp.OpenTelemetrySample\SinkSharp.OpenTelemetrySample.csproj", "{F9B5E8BD-55F9-4EA6-B1CC-C6098E4BB27C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -92,6 +94,10 @@ Global
 		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99B16A67-CDC4-40DC-AE7C-52AC35278533}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9B5E8BD-55F9-4EA6-B1CC-C6098E4BB27C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9B5E8BD-55F9-4EA6-B1CC-C6098E4BB27C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9B5E8BD-55F9-4EA6-B1CC-C6098E4BB27C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9B5E8BD-55F9-4EA6-B1CC-C6098E4BB27C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

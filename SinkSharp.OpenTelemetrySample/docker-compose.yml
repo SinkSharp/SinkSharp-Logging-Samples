@@ -1,0 +1,103 @@
+# ── SinkSharp OpenTelemetry Sample — Docker Compose ───────────────────────────
+#
+# OPTION 1 — Jaeger only (traces + span events, quickest start):
+#   docker compose --profile jaeger up -d
+#   dotnet run --launch-profile Jaeger
+#   Traces:  http://localhost:16686  (service: SinkSharp.OpenTelemetrySample)
+#
+#   What you see in Jaeger:
+#     - HTTP request spans for /orders, /simulate, /error, /slow
+#     - Span events (Activity.AddEvent) visible in each span's "Logs" tab
+#     - Error spans with exception.stacktrace on /error
+#
+#   Note: Jaeger UI shows logs ONLY as span events inside traces.
+#   For standalone log search (error messages, PII masking, full JSON),
+#   use the Grafana profile instead.
+#
+# OPTION 2 — Grafana + Loki + Jaeger (logs AND traces):
+#   docker compose --profile grafana up -d
+#   dotnet run --launch-profile Grafana
+#   Logs:    http://localhost:3000  → Explore → Loki
+#   Traces:  http://localhost:16686
+#
+# Stop all:
+#   docker compose --profile jaeger down
+#   docker compose --profile grafana down
+#
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── OPTION 1: Jaeger standalone ──────────────────────────────────────────────
+  # Binds port 4317 directly. App sends OTLP straight to Jaeger.
+  # Shows traces only — Jaeger drops log records.
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: sinksharp-jaeger
+    profiles: [jaeger]
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - LOG_LEVEL=warn
+    ports:
+      - "16686:16686"    # Jaeger UI
+      - "4317:4317"      # OTLP gRPC — app sends here directly
+      - "4318:4318"      # OTLP HTTP
+    restart: unless-stopped
+
+  # ── OPTION 2: OTel Collector ─────────────────────────────────────────────────
+  # Owns port 4317. Routes: logs → Loki, traces → Jaeger (internal).
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: sinksharp-otel-collector
+    profiles: [grafana]
+    volumes:
+      - ./otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"      # OTLP gRPC — all signals in
+      - "4318:4318"      # OTLP HTTP — all signals in
+    depends_on:
+      - loki
+      - jaeger-full
+    restart: unless-stopped
+
+  # ── OPTION 2: Jaeger (receives from Collector internally, no 4317 conflict) ──
+  jaeger-full:
+    image: jaegertracing/all-in-one:latest
+    container_name: sinksharp-jaeger
+    profiles: [grafana]
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - LOG_LEVEL=warn
+    ports:
+      - "16686:16686"    # Jaeger UI — open to host
+      # No 4317/4318 — Collector sends to this container internally
+    restart: unless-stopped
+
+  # ── OPTION 2: Loki ───────────────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:latest
+    container_name: sinksharp-loki
+    profiles: [grafana]
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config.yaml:ro
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+
+  # ── OPTION 2: Grafana ─────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sinksharp-grafana
+    profiles: [grafana]
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=false
+    volumes:
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki
+    restart: unless-stopped
