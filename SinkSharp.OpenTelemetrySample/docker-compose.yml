@@ -32,7 +32,7 @@ services:
   # Binds port 4317 directly. App sends OTLP straight to Jaeger.
   # Shows traces only — Jaeger drops log records.
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/all-in-one:1.65.0
     container_name: sinksharp-jaeger
     profiles: [jaeger]
     environment:
@@ -47,7 +47,7 @@ services:
   # ── OPTION 2: OTel Collector ─────────────────────────────────────────────────
   # Owns port 4317. Routes: logs → Loki, traces → Jaeger (internal).
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib:0.164.0
     container_name: sinksharp-otel-collector
     profiles: [grafana]
     volumes:
@@ -62,7 +62,7 @@ services:
 
   # ── OPTION 2: Jaeger (receives from Collector internally, no 4317 conflict) ──
   jaeger-full:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/all-in-one:1.65.0
     container_name: sinksharp-jaeger
     profiles: [grafana]
     environment:
@@ -75,19 +75,21 @@ services:
 
   # ── OPTION 2: Loki ───────────────────────────────────────────────────────────
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:3.4.1
     container_name: sinksharp-loki
     profiles: [grafana]
+    user: "0"   # run as root so /loki dir is writable
     command: -config.file=/etc/loki/config.yaml
     volumes:
       - ./loki-config.yaml:/etc/loki/config.yaml:ro
+      - loki-data:/loki
     ports:
       - "3100:3100"
     restart: unless-stopped
 
   # ── OPTION 2: Grafana ─────────────────────────────────────────────────────────
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.4.0
     container_name: sinksharp-grafana
     profiles: [grafana]
     environment:
@@ -101,3 +103,6 @@ services:
     depends_on:
       - loki
     restart: unless-stopped
+
+volumes:
+  loki-data:

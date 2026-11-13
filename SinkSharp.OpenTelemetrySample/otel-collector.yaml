@@ -1,5 +1,4 @@
-# OTel Collector v0.164+ — uses new exporter names (otlp_grpc, otlp_http)
-# Receives OTLP on 4317 (gRPC) and 4318 (HTTP)
+# OTel Collector — receives OTLP on 4317 (gRPC) and 4318 (HTTP)
 # Routes: traces → Jaeger, logs → Loki
 
 receivers:
@@ -17,16 +16,17 @@ processors:
 
 exporters:
   debug:
-    verbosity: detailed
+    verbosity: normal
 
-  # Traces → Jaeger (otlp_grpc replaces deprecated otlp)
-  otlp_grpc/jaeger:
+  # Traces → Jaeger via OTLP gRPC
+  otlp/jaeger:
     endpoint: jaeger-full:4317
     tls:
       insecure: true
 
-  # Logs → Loki OTLP HTTP endpoint (otlp_http replaces deprecated otlphttp)
-  otlp_http/loki:
+  # Logs → Loki via OTLP HTTP endpoint
+  # otlphttp exporter appends /v1/logs → http://loki:3100/otlp/v1/logs
+  otlphttp/loki:
     endpoint: http://loki:3100/otlp
     tls:
       insecure: true
@@ -36,8 +36,8 @@ service:
     traces:
       receivers:  [otlp]
       processors: [batch]
-      exporters:  [otlp_grpc/jaeger, debug]
+      exporters:  [otlp/jaeger, debug]
     logs:
       receivers:  [otlp]
       processors: [batch]
-      exporters:  [otlp_http/loki, debug]
+      exporters:  [otlphttp/loki, debug]

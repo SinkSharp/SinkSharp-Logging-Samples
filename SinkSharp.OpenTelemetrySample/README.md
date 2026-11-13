@@ -115,15 +115,18 @@ In Grafana:
 ### How the routing works
 
 ```
-dotnet run → SinkSharp → OTLP gRPC :4317
-                                    │
-                              OTel Collector (otel-collector.yaml)
-                                    │
-                                    ▼
-                                  Loki :3100
-                                    │
-                                    ▼
-                              Grafana :3000
+dotnet run → SinkSharp → OtlpLogSink → OTLP gRPC :4317
+                                                  │
+                                         OTel Collector
+                                          (otel-collector.yaml)
+                                                  │
+                              ┌───────────────────┘
+                              │ logs               │ traces
+                              ▼                    ▼
+                           Loki :3100         Jaeger :16686
+                              │
+                              ▼
+                         Grafana :3000
 ```
 
 ---
@@ -213,37 +216,46 @@ exception.stacktrace:  at SinkSharp.OpenTelemetrySample...
 
 ---
 
-## Using `SinkSharp.Sinks.OpenTelemetry` (once published)
-
-This sample currently uses the raw OpenTelemetry SDK for compatibility.
-Once `SinkSharp.Sinks.OpenTelemetry` is published to NuGet, the setup simplifies to:
+## Using `SinkSharp.Sinks.OpenTelemetry`
 
 ```bash
-dotnet add package SinkSharp.Core --version 1.0.9
-dotnet add package SinkSharp.Sinks.OpenTelemetry --version 1.0.0
+dotnet add package SinkSharp.Core
+dotnet add package SinkSharp.Sinks.OpenTelemetry
 ```
 
 ```csharp
+var otlpOptions = new OtlpLogSinkOptions
+{
+    Endpoint              = new Uri("http://localhost:4317"),
+    Protocol              = OtlpProtocol.Grpc,
+    ServiceName           = "MyApp",
+    ServiceVersion        = "1.0.0",
+    DeploymentEnvironment = env,
+    BatchSize             = 512,
+    FlushInterval         = TimeSpan.FromSeconds(5),
+    // Datadog API key auth:
+    // Headers = new() { ["DD-API-KEY"] = config["DD_API_KEY"] }
+};
+
 builder.Services.AddSinkSharp(options => options
     .WithCorrelationId()
     .WithEnvironment("MyApp", env)
     .WithPiiMasking()
     .WriteTo(new ColoredConsoleSink(), LogLevel.Debug)
-    .WriteTo(new OtlpLogSink(new OtlpLogSinkOptions
+    .WriteTo(new OtlpLogSink(otlpOptions), LogLevel.Information));
+
+// Optional — distributed tracing (HTTP request spans in Jaeger)
+builder.Services.AddSinkSharpTracing(otlpOptions, tracing => tracing
+    .AddAspNetCoreInstrumentation(o => o.RecordException = true)
+    .AddHttpClientInstrumentation()
+    .AddOtlpExporter(o =>
     {
-        Endpoint              = new Uri("http://localhost:4317"),
-        Protocol              = OtlpExportProtocol.Grpc,
-        ServiceName           = "MyApp",
-        ServiceVersion        = "1.0.0",
-        DeploymentEnvironment = env,
-        // Datadog API key auth:
-        // Headers = new Dictionary<string, string> { ["DD-API-KEY"] = config["DD_API_KEY"] }
-        BatchSize             = 512,
-        FlushInterval         = TimeSpan.FromSeconds(5),
-    })));
+        o.Endpoint = otlpOptions.Endpoint;
+        o.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+    }));
 ```
 
-No `builder.Logging.AddOpenTelemetry()` needed — the sink handles OTLP export directly.
+No `builder.Logging.AddOpenTelemetry()` needed — `OtlpLogSink` handles OTLP export directly via the SinkSharp pipeline.
 
 ---
 
@@ -271,7 +283,7 @@ service:
     logs:
       receivers:  [otlp]
       processors: [batch]
-      exporters:  [loki, datadog, elasticsearch]   # all three at once
+      exporters:  [otlphttp/loki, otlp/datadog, otlp/elasticsearch]  # all three at once
 ```
 
 ---
@@ -304,11 +316,15 @@ docker compose --profile grafana down -v
 
 ## Release notes
 
+### v1.0.1
+- Updated to use `SinkSharp.Sinks.OpenTelemetry` 1.0.1 — wire format and gRPC transport fixes
+- Grafana profile sends logs directly to Loki OTLP endpoint (port 3100)
+- Docker images pinned to stable versions: Jaeger 1.65.0, Loki 3.4.1, Grafana 11.4.0, Collector 0.164.0
+
 ### v1.0.0
 - Demonstrates OTLP export from SinkSharp to Jaeger, Grafana Loki, and Datadog
 - `OTEL_BACKEND` env var / launch profile selects backend at startup — no code changes
 - Docker Compose with Jaeger profile (1 container) and Grafana profile (3 containers)
-- OTel Collector config pre-wired to route logs to Loki with SinkSharp label mapping
 - Shows PII masking, CorrelationId, user context, exception attributes in OTel backends
 
 ## Links
@@ -320,3 +336,6 @@ docker compose --profile grafana down -v
 | 🔭 All samples | [SinkSharp-Logging-Samples](https://github.com/SinkSharp/SinkSharp-Logging-Samples) |
 | 📧 Support | [support@sinksharp.com](mailto:support@sinksharp.com) |
 | 📄 Licence | [Apache 2.0](https://github.com/SinkSharp/.github/blob/main/profile/LICENSE) |
+
+
+

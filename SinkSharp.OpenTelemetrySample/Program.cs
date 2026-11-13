@@ -70,8 +70,8 @@ var otlpOptions = backend.ToLowerInvariant() switch
     // To see logs in a UI, use the Grafana profile instead.
     "jaeger" => new OtlpLogSinkOptions
     {
-        Endpoint              = new Uri("http://localhost:4318"),
-        Protocol              = OtlpProtocol.HttpProtobuf,
+        Endpoint              = new Uri("http://localhost:4317"),
+        Protocol              = OtlpProtocol.Grpc,
         ServiceName           = appName,
         ServiceVersion        = "1.0.0",
         DeploymentEnvironment = env,
@@ -79,11 +79,12 @@ var otlpOptions = backend.ToLowerInvariant() switch
         FlushInterval         = TimeSpan.FromSeconds(5),
     },
 
-    // Grafana: OTel Collector HTTP/Protobuf 4318 for OtlpLogSink logs
+    // Grafana: logs and traces both route through the OTel Collector on port 4317.
+    // Collector routes: logs → Loki, traces → Jaeger (see otel-collector.yaml).
     "grafana" => new OtlpLogSinkOptions
     {
-        Endpoint              = new Uri("http://localhost:4318"),
-        Protocol              = OtlpProtocol.HttpProtobuf,
+        Endpoint              = new Uri("http://localhost:4317"),
+        Protocol              = OtlpProtocol.Grpc,
         ServiceName           = appName,
         ServiceVersion        = "1.0.0",
         DeploymentEnvironment = env,
@@ -100,6 +101,10 @@ var otlpOptions = backend.ToLowerInvariant() switch
         ServiceName           = appName,
         ServiceVersion        = "1.0.0",
         DeploymentEnvironment = env,
+        BatchSize             = 512,
+        FlushInterval         = TimeSpan.FromSeconds(5),
+        ExportTimeout         = TimeSpan.FromSeconds(30), // higher for HTTPS cloud endpoint
+        RetryCount            = 3,
     },
 
     _ => throw new InvalidOperationException(
