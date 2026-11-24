@@ -34,3 +34,8 @@
 /SinkSharp.OpenTelemetrySample/obj/
 /SinkSharp.OpenTelemetrySample/bin/
 /SinkSharp.ScopedLoggingSample/logs/
+/SinkSharp.WebhookAlertSample/bin/
+/SinkSharp.RedisHistoryTest/.vs/
+/SinkSharp.RedisHistoryTest/obj/
+/SinkSharp.WebhookAlertSample/obj/
+/SinkSharp.RedisHistoryTest/bin/

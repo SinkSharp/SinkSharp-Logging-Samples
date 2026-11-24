@@ -1,31 +1,31 @@
 # SinkSharp Samples
 
-Complete working samples covering every use case. Each sample is self-contained and runnable with `dotnet run`.
+Complete working samples covering every use case. Each sample is self-contained and runnable with `dotnet run -f net10.0`.
 
 ## Sample index
 
 | Sample | What it shows | Run → Open |
 |---|---|---|
-| **SinkSharp.Sample** | Console app — no DI, standalone dashboard | `dotnet run` → http://localhost:5341 |
-| **SinkSharp.WebApiSample** | Web API with controllers + dashboard on same port | `dotnet run` → https://localhost:5001/sinksharp/dashboard |
-| **SinkSharp.WorkerSample** | Worker Service — 2 background workers + dashboard | `dotnet run` → http://localhost:5341 |
-| **SinkSharp.MinimalApiSample** | Minimal API — per-category levels, PII, health check | `dotnet run` → https://localhost:5001/sinksharp/dashboard |
-| **SinkSharp.CustomSinkSample** | 4 custom sink patterns: InMemory, Alert, Conditional, Buffered | `dotnet run` |
-| **SinkSharp.CustomEnricherSample** | 3 custom enrichers: Tenant, BuildInfo, Request + dashboard | `dotnet run` → https://localhost:5001/sinksharp/dashboard |
-| **SinkSharp.MultiSinkSample** | Console + File + Dashboard + AuditFile simultaneously | `dotnet run` → https://localhost:5001/sinksharp/dashboard |
-| **SinkSharp.HealthCheckSample** | Health check states, K8s probes, multi-check aggregation | `dotnet run` → https://localhost:5001/health/detail |
-| **SinkSharp.ScopedLoggingSample** | Correlation through 3 services, parallel tasks, nested scopes | `dotnet run` → https://localhost:5001/sinksharp/dashboard |
-| **SinkSharp.MultiPodSample** | Both dashboard options — single pod + Redis multi-pod | `dotnet run` → https://localhost:{port}/sinksharp/dashboard |
-| **SinkSharp.AzureSample** | Azure enricher — App Service, AKS, Container Apps | `dotnet run` → https://localhost:5001 |
+| **SinkSharp.Sample** | Console app — no DI, standalone dashboard | `dotnet run -f net10.0` → http://localhost:5341 |
+| **SinkSharp.WebApiSample** | Web API with controllers + dashboard on same port | `dotnet run -f net10.0` → https://localhost:5001/sinksharp/dashboard |
+| **SinkSharp.WorkerSample** | Worker Service — 2 background workers + dashboard | `dotnet run -f net10.0` → http://localhost:5341 |
+| **SinkSharp.MinimalApiSample** | Minimal API — per-category levels, PII, health check | `dotnet run -f net10.0` → https://localhost:5001/sinksharp/dashboard |
+| **SinkSharp.CustomSinkSample** | 4 custom sink patterns: InMemory, Alert, Conditional, Buffered | `dotnet run -f net10.0` |
+| **SinkSharp.CustomEnricherSample** | 3 custom enrichers: Tenant, BuildInfo, Request + dashboard | `dotnet run -f net10.0` → https://localhost:5001/sinksharp/dashboard |
+| **SinkSharp.MultiSinkSample** | Console + File + Dashboard + AuditFile simultaneously | `dotnet run -f net10.0` → https://localhost:5001/sinksharp/dashboard |
+| **SinkSharp.HealthCheckSample** | Health check states, K8s probes, multi-check aggregation | `dotnet run -f net10.0` → https://localhost:5001/health/detail |
+| **SinkSharp.ScopedLoggingSample** | Correlation through 3 services, parallel tasks, nested scopes | `dotnet run -f net10.0` → https://localhost:5001/sinksharp/dashboard |
+| **SinkSharp.MultiPodSample** | Both dashboard options — single pod + Redis multi-pod | `dotnet run -f net10.0` → https://localhost:{port}/sinksharp/dashboard |
+| **SinkSharp.AzureSample** | Azure enricher — App Service, AKS, Container Apps | `dotnet run -f net10.0` → https://localhost:5001 |
 
 ---
 
 ## Quick start
 
 ```bash
-# Run any sample
+# Run any sample (now multi-targeted net10.0;net9.0 — -f picks which one)
 cd SinkSharp.WebApiSample
-dotnet run
+dotnet run -f net10.0
 
 # Open the dashboard
 # https://localhost:5001/sinksharp/dashboard
@@ -119,9 +119,13 @@ Without a backplane each pod has its own log buffer — you only see the logs fr
 whichever pod the load balancer sends your browser to. A Redis backplane merges
 all pod streams into one dashboard.
 
-**You can reuse your existing Redis** — SinkSharp uses its own channel prefix
-(`SinkSharp`) and will never interfere with your session cache, distributed cache,
-or rate limiting.
+**You can reuse your existing Redis** — session cache, distributed cache, and rate
+limiting all use different key patterns than the SignalR backplane, so there's no
+overlap. If you run other SignalR apps against the same Redis instance, give each one
+its own `ChannelPrefix` (shown below) so their backplanes don't share channels —
+that's a standard SignalR setting, not something SinkSharp sets for you automatically.
+(SinkSharp's own Redis Streams history store, below, does use a dedicated default key —
+`sinksharp:dashboard:logs` — so that part is safely namespaced out of the box.)
 
 ### How Redis backplane works
 
@@ -162,12 +166,20 @@ app.UseSinkSharpDashboard("/sinksharp/dashboard");
 ## Install
 
 ```bash
-dotnet add package SinkSharp.Core                   # 1.0.10
+# Core (required)
+dotnet add package SinkSharp.Core                   # 1.0.11
+
+# Sinks
 dotnet add package SinkSharp.Sinks.Console           # 1.0.1
-dotnet add package SinkSharp.Sinks.File              # 1.0.1
-dotnet add package SinkSharp.Sinks.Dashboard         # 1.0.3
+dotnet add package SinkSharp.Sinks.File              # 1.0.2
+dotnet add package SinkSharp.Sinks.Dashboard         # 1.1.0
+dotnet add package SinkSharp.Sinks.Dashboard.Redis   # 1.0.0  — optional, multi-pod backplane
+dotnet add package SinkSharp.Sinks.OpenTelemetry     # 1.0.1  — optional, OTLP export
+dotnet add package SinkSharp.Sinks.Slack             # 1.0.0  — optional, push alerts
+dotnet add package SinkSharp.Sinks.MicrosoftTeams    # 1.0.0  — optional, push alerts
+
+# Enrichers
 dotnet add package SinkSharp.Enrichers.Azure         # 1.0.0
-dotnet add package SinkSharp.Sinks.OpenTelemetry     # 1.0.1
 ```
 
 ---

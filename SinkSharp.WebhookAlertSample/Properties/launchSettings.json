@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "SinkSharp.WebhookAlertSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "SLACK_WEBHOOK_URL": "",
+        "TEAMS_WEBHOOK_URL": ""
+      }
+    }
+  }
+}

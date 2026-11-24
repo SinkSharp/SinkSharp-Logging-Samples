@@ -32,6 +32,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.DashboardAuthSamp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.OpenTelemetrySample", "SinkSharp.OpenTelemetrySample\SinkSharp.OpenTelemetrySample.csproj", "{F9B5E8BD-55F9-4EA6-B1CC-C6098E4BB27C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.RedisHistoryTest", "SinkSharp.RedisHistoryTest\SinkSharp.RedisHistoryTest.csproj", "{AEFD60AB-1067-CB99-3714-1B9666983A09}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SinkSharp.WebhookAlertSample", "SinkSharp.WebhookAlertSample\SinkSharp.WebhookAlertSample.csproj", "{3C267BB0-C30A-4496-99C6-B43E92213D9A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +102,14 @@ Global
 		{F9B5E8BD-55F9-4EA6-B1CC-C6098E4BB27C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9B5E8BD-55F9-4EA6-B1CC-C6098E4BB27C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9B5E8BD-55F9-4EA6-B1CC-C6098E4BB27C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEFD60AB-1067-CB99-3714-1B9666983A09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEFD60AB-1067-CB99-3714-1B9666983A09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEFD60AB-1067-CB99-3714-1B9666983A09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEFD60AB-1067-CB99-3714-1B9666983A09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C267BB0-C30A-4496-99C6-B43E92213D9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C267BB0-C30A-4496-99C6-B43E92213D9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C267BB0-C30A-4496-99C6-B43E92213D9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C267BB0-C30A-4496-99C6-B43E92213D9A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
